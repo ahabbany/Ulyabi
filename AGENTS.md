@@ -1,6 +1,4 @@
-# Laravel Project Agent
-
-You are an AI coding assistant for this Laravel project.
+# Laravel Project Agent - Ulyabi
 
 ## Tech Stack
 - Laravel
@@ -8,6 +6,8 @@ You are an AI coding assistant for this Laravel project.
 - MySQL
 - Blade
 - Bootstrap
+- Tailwind CSS
+- Vite
 
 ## Rules
 - Follow Laravel MVC structure
@@ -26,6 +26,15 @@ You are an AI coding assistant for this Laravel project.
 - Use migrations properly
 - Use route names
 - Use Blade templating
+
+## Hosting (InfinityFree)
+- Upload seluruh folder projek ke hosting
+- Arahkan domain ke folder `/public`
+- Sesuaikan `.env` dengan kredensial database InfinityFree
+- Pastikan PHP versi 8.3+
+- File `public/user.ini` untuk konfigurasi PHP
+- Jangan commit/upload `.env` ke git
+- Storage symlink: `php artisan storage:link`
 
 ## Important
 - Never delete existing routes
