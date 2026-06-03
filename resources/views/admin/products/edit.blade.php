@@ -82,6 +82,35 @@
                 </label>
             </div>
 
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <label class="form-label mb-0">Varian Produk <span class="text-xs text-gray-400 font-normal">(opsional)</span></label>
+                    <button type="button" onclick="addVariant()" class="text-sm text-[#A376A2] hover:text-[#6B3F69] transition font-medium flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Tambah Varian
+                    </button>
+                </div>
+                <div id="variants-container" class="space-y-3">
+                    @forelse($product->variants as $variant)
+                    <div class="variant-row flex items-start gap-3 p-3 bg-gray-50 rounded-xl" data-index="{{ $loop->index }}">
+                        <div class="flex-1">
+                            <input type="text" name="variants[{{ $loop->index }}][name]" value="{{ $variant->name }}"
+                                   class="form-input py-2 text-sm" placeholder="Nama varian (misal: Pisang Coklat)" required>
+                        </div>
+                        <div class="w-36">
+                            <input type="number" name="variants[{{ $loop->index }}][additional_price]" value="{{ $variant->additional_price }}"
+                                   class="form-input py-2 text-sm" placeholder="Tambahan harga" min="0">
+                        </div>
+                        <button type="button" onclick="removeVariant(this)" class="p-2 text-gray-400 hover:text-red-500 transition mt-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                    @empty
+                    <p class="text-xs text-gray-400">Biarkan kosong jika produk tidak memiliki varian.</p>
+                    @endforelse
+                </div>
+            </div>
+
             <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
                 <button type="submit" class="btn-admin-primary">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -96,6 +125,41 @@
 
 @push('scripts')
 <script>
+    let variantIndex = {{ $product->variants->count() }};
+
+    function addVariant(name = '', additionalPrice = '') {
+        const container = document.getElementById('variants-container');
+        const emptyMsg = container.querySelector('p.text-xs');
+        if (emptyMsg) emptyMsg.remove();
+
+        const div = document.createElement('div');
+        div.className = 'variant-row flex items-start gap-3 p-3 bg-gray-50 rounded-xl';
+        div.dataset.index = variantIndex;
+        div.innerHTML = `
+            <div class="flex-1">
+                <input type="text" name="variants[${variantIndex}][name]" value="${name}"
+                       class="form-input py-2 text-sm" placeholder="Nama varian (misal: Pisang Coklat)" required>
+            </div>
+            <div class="w-36">
+                <input type="number" name="variants[${variantIndex}][additional_price]" value="${additionalPrice}"
+                       class="form-input py-2 text-sm" placeholder="Tambahan harga" min="0">
+            </div>
+            <button type="button" onclick="removeVariant(this)" class="p-2 text-gray-400 hover:text-red-500 transition mt-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+        `;
+        container.appendChild(div);
+        variantIndex++;
+    }
+
+    function removeVariant(btn) {
+        btn.closest('.variant-row').remove();
+        const container = document.getElementById('variants-container');
+        if (!container.querySelector('.variant-row')) {
+            container.innerHTML = '<p class="text-xs text-gray-400">Biarkan kosong jika produk tidak memiliki varian.</p>';
+        }
+    }
+
     function previewImage(event) {
         const preview = document.getElementById('image-preview');
         const img = document.getElementById('preview');

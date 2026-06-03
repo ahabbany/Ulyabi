@@ -3,48 +3,82 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductVariant;
 
 class CartController extends Controller
 {
     public function index()
     {
         $cart = session()->get('cart', []);
-        $products = [];
+        $items = collect();
         $total = 0;
 
         if (count($cart) > 0) {
-            $ids = array_keys($cart);
+            $productIds = collect($cart)->pluck('product_id')->unique()->values()->toArray();
             $products = Product::with('subcategory.category')
-                ->whereIn('id', $ids)
+                ->whereIn('id', $productIds)
                 ->get()
-                ->map(function ($product) use ($cart) {
-                    $product->cart_quantity = $cart[$product->id];
-                    $product->subtotal = $product->price * $cart[$product->id];
-                    return $product;
-                });
+                ->keyBy('id');
 
-            $total = $products->sum('subtotal');
+            $variantIds = collect($cart)->pluck('variant_id')->filter()->unique()->values()->toArray();
+            $variants = ProductVariant::whereIn('id', $variantIds)->get()->keyBy('id');
+
+            foreach ($cart as $key => $item) {
+                $product = $products[$item['product_id']] ?? null;
+                if (!$product) continue;
+
+                $variant = null;
+                $itemPrice = $product->price;
+                $variantName = '';
+
+                if ($item['variant_id'] > 0 && isset($variants[$item['variant_id']])) {
+                    $variant = $variants[$item['variant_id']];
+                    $itemPrice += $variant->additional_price;
+                    $variantName = $variant->name;
+                }
+
+                $subtotal = $itemPrice * $item['quantity'];
+                $total += $subtotal;
+
+                $items->push((object) [
+                    'key' => $key,
+                    'product' => $product,
+                    'variant' => $variant,
+                    'variant_name' => $variantName,
+                    'quantity' => $item['quantity'],
+                    'item_price' => $itemPrice,
+                    'subtotal' => $subtotal,
+                ]);
+            }
         }
 
-        return view('cart.index', compact('products', 'total'));
+        return view('cart.index', compact('items', 'total'));
     }
 
     public function add()
     {
         $data = request()->validate([
             'product_id' => 'required|exists:products,id',
+            'variant_id' => 'nullable|integer|exists:product_variants,id',
             'quantity' => 'required|integer|min:1',
         ]);
 
+        $productId = $data['product_id'];
+        $variantId = (int) ($data['variant_id'] ?? 0);
+        $quantity = (int) $data['quantity'];
+
+        $key = $productId . '_' . $variantId;
+
         $cart = session()->get('cart', []);
 
-        $productId = $data['product_id'];
-        $quantity = $data['quantity'];
-
-        if (isset($cart[$productId])) {
-            $cart[$productId] += $quantity;
+        if (isset($cart[$key])) {
+            $cart[$key]['quantity'] += $quantity;
         } else {
-            $cart[$productId] = $quantity;
+            $cart[$key] = [
+                'product_id' => $productId,
+                'variant_id' => $variantId,
+                'quantity' => $quantity,
+            ];
         }
 
         session()->put('cart', $cart);
@@ -55,17 +89,16 @@ class CartController extends Controller
     public function update()
     {
         $data = request()->validate([
-            'product_id' => 'required|exists:products,id',
+            'key' => 'required|string',
             'quantity' => 'required|integer|min:0',
         ]);
 
         $cart = session()->get('cart', []);
-        $productId = $data['product_id'];
 
         if ($data['quantity'] < 1) {
-            unset($cart[$productId]);
+            unset($cart[$data['key']]);
         } else {
-            $cart[$productId] = $data['quantity'];
+            $cart[$data['key']]['quantity'] = $data['quantity'];
         }
 
         session()->put('cart', $cart);
@@ -76,11 +109,11 @@ class CartController extends Controller
     public function remove()
     {
         $data = request()->validate([
-            'product_id' => 'required|exists:products,id',
+            'key' => 'required|string',
         ]);
 
         $cart = session()->get('cart', []);
-        unset($cart[$data['product_id']]);
+        unset($cart[$data['key']]);
         session()->put('cart', $cart);
 
         return redirect()->route('cart.index')->with('success', 'Produk dihapus dari keranjang!');
@@ -94,17 +127,32 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja masih kosong!');
         }
 
-        $ids = array_keys($cart);
-        $products = Product::whereIn('id', $ids)->get();
+        $productIds = collect($cart)->pluck('product_id')->unique()->values()->toArray();
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        $variantIds = collect($cart)->pluck('variant_id')->filter()->unique()->values()->toArray();
+        $variants = ProductVariant::whereIn('id', $variantIds)->get()->keyBy('id');
+
         $total = 0;
         $items = [];
 
-        foreach ($products as $product) {
-            $qty = $cart[$product->id];
-            $subtotal = $product->price * $qty;
+        foreach ($cart as $item) {
+            $product = $products[$item['product_id']] ?? null;
+            if (!$product) continue;
+
+            $itemPrice = $product->price;
+            $variantLabel = '';
+
+            if ($item['variant_id'] > 0 && isset($variants[$item['variant_id']])) {
+                $variant = $variants[$item['variant_id']];
+                $itemPrice += $variant->additional_price;
+                $variantLabel = ' (' . $variant->name . ')';
+            }
+
+            $subtotal = $itemPrice * $item['quantity'];
             $total += $subtotal;
 
-            $items[] = "- {$product->name} x{$qty} = Rp" . number_format($subtotal, 0, ',', '.');
+            $items[] = "- {$product->name}{$variantLabel} x{$item['quantity']} = Rp" . number_format($subtotal, 0, ',', '.');
         }
 
         $message = "Halo Ulyabi, saya ingin memesan:\n\n";

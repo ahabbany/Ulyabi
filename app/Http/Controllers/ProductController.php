@@ -48,10 +48,7 @@ class ProductController extends Controller
 
     public function show($slug)
     {
-        $product = Product::with('subcategory.category')
-            ->where('slug', $slug)
-            ->firstOrFail();
-
+        $product = Product::with('subcategory.category', 'activeVariants')->where('slug', $slug)->firstOrFail();
         $relatedProducts = Product::with('subcategory.category')
             ->where('subcategory_id', $product->subcategory_id)
             ->where('id', '!=', $product->id)

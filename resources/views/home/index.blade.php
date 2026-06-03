@@ -91,6 +91,7 @@
                         <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="variant_id" value="0">
                             <input type="hidden" name="quantity" value="1">
                             <button type="submit" 
                                     class="w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#A376A2] hover:bg-[#A376A2] hover:text-white transition-all duration-300">
@@ -135,6 +136,7 @@
                         <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="variant_id" value="0">
                             <input type="hidden" name="quantity" value="1">
                             <button type="submit" 
                                     class="w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-[#A376A2] hover:bg-[#A376A2] hover:text-white transition-all duration-300">

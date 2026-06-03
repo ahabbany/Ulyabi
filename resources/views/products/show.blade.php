@@ -40,12 +40,36 @@
                         <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{{ $product->name }}</h1>
                         <p class="text-gray-600 mb-6 leading-relaxed">{{ $product->description }}</p>
                         <div class="text-3xl font-bold mb-6" style="color: #6B3F69;">
-                            Rp{{ number_format($product->price, 0, ',', '.') }}
+                            <span id="display-price">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
                         </div>
 
                         <form action="{{ route('cart.add') }}" method="POST" class="space-y-4">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="variant_id" id="variant_id" value="0">
+
+                            @if($product->activeVariants->count() > 0)
+                            <div>
+                                <label class="text-sm font-medium text-gray-700 block mb-2">Pilih Varian:</label>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($product->activeVariants as $variant)
+                                    <label class="variant-option cursor-pointer">
+                                        <input type="radio" name="variant" value="{{ $variant->id }}"
+                                               data-price="{{ $variant->additional_price }}"
+                                               onchange="selectVariant(this)"
+                                               class="hidden peer">
+                                        <span class="block px-4 py-2 rounded-xl border-2 border-gray-200 peer-checked:border-[#A376A2] peer-checked:bg-[#DDC3C3]/20 peer-checked:text-[#6B3F69] text-sm font-medium text-gray-600 hover:border-[#A376A2] transition">
+                                            {{ $variant->name }}
+                                            @if($variant->additional_price > 0)
+                                            <span class="text-xs text-gray-400">(+Rp{{ number_format($variant->additional_price, 0, ',', '.') }})</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+
                             <div class="flex items-center gap-4">
                                 <label class="text-sm font-medium text-gray-700">Quantity:</label>
                                 <div class="flex items-center border border-gray-200 rounded-xl">
@@ -84,6 +108,7 @@
                             <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $related->id }}">
+                                <input type="hidden" name="variant_id" value="0">
                                 <input type="hidden" name="quantity" value="1">
                                 <button type="submit" 
                                         class="w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-[#A376A2] hover:bg-[#A376A2] hover:text-white transition-all duration-300">
@@ -108,6 +133,14 @@
     </section>
 
     <script>
+        const basePrice = {{ $product->price }};
+
+        function selectVariant(radio) {
+            const price = parseInt(radio.dataset.price) || 0;
+            document.getElementById('variant_id').value = radio.value;
+            document.getElementById('display-price').textContent = 'Rp' + (basePrice + price).toLocaleString('id-ID');
+        }
+
         function decrementQty() {
             const input = document.getElementById('quantity');
             const val = parseInt(input.value);

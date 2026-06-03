@@ -7,22 +7,25 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-3xl font-bold mb-8" style="color: #6B3F69;">Keranjang Belanja</h1>
 
-            @if($products->count() > 0)
+            @if($items->count() > 0)
             <div class="space-y-4">
-                @foreach($products as $product)
+                @foreach($items as $item)
                 <div class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col sm:flex-row gap-4 items-start">
-                    <img src="{{ $product->image }}" alt="{{ $product->name }}" 
+                    <img src="{{ asset($item->product->image) }}" alt="{{ $item->product->name }}" 
                          class="w-full sm:w-24 h-24 object-cover rounded-xl">
                     <div class="flex-1 w-full">
                         <div class="flex items-start justify-between">
                             <div>
-                                <h3 class="font-semibold text-gray-800">{{ $product->name }}</h3>
-                                <p class="text-sm text-gray-500">{{ $product->subcategory->category->name }} - {{ $product->subcategory->name }}</p>
-                                <p class="text-[#A376A2] font-bold mt-1">Rp{{ number_format($product->price, 0, ',', '.') }}</p>
+                                <h3 class="font-semibold text-gray-800">{{ $item->product->name }}</h3>
+                                <p class="text-sm text-gray-500">{{ $item->product->subcategory->category->name }} - {{ $item->product->subcategory->name }}</p>
+                                @if($item->variant_name)
+                                <p class="text-xs text-[#A376A2] font-medium mt-0.5">Varian: {{ $item->variant_name }}</p>
+                                @endif
+                                <p class="text-[#A376A2] font-bold mt-1">Rp{{ number_format($item->item_price, 0, ',', '.') }}</p>
                             </div>
                             <form action="{{ route('cart.remove') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="key" value="{{ $item->key }}">
                                 <button type="submit" class="text-gray-400 hover:text-red-500 transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="3 6 5 6 21 6"></polyline>
@@ -34,17 +37,17 @@
                         <div class="flex items-center justify-between mt-4">
                             <form action="{{ route('cart.update') }}" method="POST" class="flex items-center gap-2">
                                 @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="key" value="{{ $item->key }}">
                                 <div class="flex items-center border border-gray-200 rounded-xl">
-                                    <button type="submit" name="quantity" value="{{ $product->cart_quantity - 1 }}"
+                                    <button type="submit" name="quantity" value="{{ $item->quantity - 1 }}"
                                             class="px-3 py-1.5 text-gray-600 hover:text-[#A376A2] transition font-bold text-sm">−</button>
-                                    <span class="px-4 py-1.5 text-sm font-medium border-x border-gray-200">{{ $product->cart_quantity }}</span>
-                                    <button type="submit" name="quantity" value="{{ $product->cart_quantity + 1 }}"
+                                    <span class="px-4 py-1.5 text-sm font-medium border-x border-gray-200">{{ $item->quantity }}</span>
+                                    <button type="submit" name="quantity" value="{{ $item->quantity + 1 }}"
                                             class="px-3 py-1.5 text-gray-600 hover:text-[#A376A2] transition font-bold text-sm">+</button>
                                 </div>
                             </form>
                             <p class="font-semibold" style="color: #6B3F69;">
-                                Rp{{ number_format($product->subtotal, 0, ',', '.') }}
+                                Rp{{ number_format($item->subtotal, 0, ',', '.') }}
                             </p>
                         </div>
                     </div>

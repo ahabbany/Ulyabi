@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -47,6 +48,9 @@ class ProductController extends Controller
             'subcategory_id' => 'required|exists:subcategories,id',
             'is_best_seller' => 'boolean',
             'is_new_arrival' => 'boolean',
+            'variants' => 'nullable|array',
+            'variants.*.name' => 'required_with:variants|max:255',
+            'variants.*.additional_price' => 'nullable|numeric|min:0',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -55,7 +59,7 @@ class ProductController extends Controller
         $file->move(public_path('images/products'), $filename);
         $imagePath = 'images/products/' . $filename;
 
-        Product::create([
+        $product = Product::create([
             'subcategory_id' => $validated['subcategory_id'],
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']) . '-' . Str::random(6),
@@ -66,18 +70,28 @@ class ProductController extends Controller
             'is_new_arrival' => $request->boolean('is_new_arrival'),
         ]);
 
+        if ($request->filled('variants')) {
+            foreach ($request->variants as $variantData) {
+                $product->variants()->create([
+                    'name' => $variantData['name'],
+                    'additional_price' => $variantData['additional_price'] ?? 0,
+                ]);
+            }
+        }
+
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function show(Product $product)
     {
-        $product->load('subcategory.category');
+        $product->load('subcategory.category', 'variants');
         return view('admin.products.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
+        $product->load('variants');
         $categories = Category::with('subcategories')->get();
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -91,6 +105,9 @@ class ProductController extends Controller
             'subcategory_id' => 'required|exists:subcategories,id',
             'is_best_seller' => 'boolean',
             'is_new_arrival' => 'boolean',
+            'variants' => 'nullable|array',
+            'variants.*.name' => 'required_with:variants|max:255',
+            'variants.*.additional_price' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -115,6 +132,16 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+
+        $product->variants()->delete();
+        if ($request->filled('variants')) {
+            foreach ($request->variants as $variantData) {
+                $product->variants()->create([
+                    'name' => $variantData['name'],
+                    'additional_price' => $variantData['additional_price'] ?? 0,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil diperbarui.');

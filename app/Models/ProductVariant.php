@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ProductVariant extends Model
+{
+    protected $fillable = [
+        'product_id', 'name', 'additional_price', 'is_active',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'additional_price' => 'integer',
+        ];
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+}

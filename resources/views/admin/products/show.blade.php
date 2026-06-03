@@ -31,6 +31,21 @@
                         <p class="text-sm text-gray-400">Harga</p>
                         <p class="text-2xl font-bold text-[#A376A2]">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
                     </div>
+                    @if($product->variants->count() > 0)
+                    <div>
+                        <p class="text-sm text-gray-400">Varian</p>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            @foreach($product->variants as $variant)
+                            <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#DDC3C3]/20 text-sm rounded-lg">
+                                {{ $variant->name }}
+                                @if($variant->additional_price > 0)
+                                <span class="text-xs text-gray-500">(+Rp{{ number_format($variant->additional_price, 0, ',', '.') }})</span>
+                                @endif
+                            </span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                     <div>
                         <p class="text-sm text-gray-400">Deskripsi</p>
                         <p class="text-gray-600 leading-relaxed">{{ $product->description }}</p>

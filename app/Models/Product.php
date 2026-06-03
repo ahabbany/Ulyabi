@@ -24,6 +24,16 @@ class Product extends Model
         return $this->belongsTo(Subcategory::class);
     }
 
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function activeVariants()
+    {
+        return $this->hasMany(ProductVariant::class)->where('is_active', true);
+    }
+
     public function getCategoryAttribute()
     {
         return $this->subcategory->category;
