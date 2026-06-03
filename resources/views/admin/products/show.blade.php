@@ -8,13 +8,7 @@
     <div class="card-admin overflow-hidden">
         <div class="md:flex">
             <div class="md:w-1/2 bg-[#DDC3C3]/20 p-8 flex items-center justify-center">
-                @php
-                    $imageUrl = $product->image;
-                    if (!\Illuminate\Support\Str::startsWith($imageUrl, 'http')) {
-                        $imageUrl = \Illuminate\Support\Facades\Storage::url($imageUrl);
-                    }
-                @endphp
-                <img src="{{ $imageUrl }}" alt="{{ $product->name }}" class="w-full max-w-sm rounded-xl shadow-lg" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
+                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" class="w-full max-w-sm rounded-xl shadow-lg" onerror="this.src='https://via.placeholder.com/400?text=No+Image'">
             </div>
             <div class="md:w-1/2 p-8">
                 <div class="flex items-center gap-2 mb-2">

@@ -80,29 +80,6 @@ class DatabaseSeeder extends Seeder
             ['subcategory' => 'Nasi Box', 'name' => 'Nasi Box Ayam Kecap', 'price' => 32000, 'best' => true, 'new' => false],
         ];
 
-        $images = [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80',
-            'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
-            'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&q=80',
-            'https://images.unsplash.com/photo-1546069901-ba1589c3e8e9?w=600&q=80',
-            'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
-            'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=600&q=80',
-            'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80',
-            'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=600&q=80',
-            'https://images.unsplash.com/photo-1578985545062-28b1d6b0c9d1?w=600&q=80',
-            'https://images.unsplash.com/photo-1551218804-3e2f9d7a0b8c?w=600&q=80',
-            'https://images.unsplash.com/photo-1606788053949-17003b7c0b1c?w=600&q=80',
-            'https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=600&q=80',
-            'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&q=80',
-            'https://images.unsplash.com/photo-1604909052743-94e838986d24?w=600&q=80',
-            'https://images.unsplash.com/photo-1555126634-323283e090fa?w=600&q=80',
-            'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80',
-            'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80',
-            'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&q=80',
-            'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=600&q=80',
-            'https://images.unsplash.com/photo-1574484284002-952d92456975?w=600&q=80',
-        ];
-
         $descriptions = [
             'Snack' => [
                 'Gorengan' => 'Gorengan crispy yang renyah di luar dan lembut di dalam. Dibuat dari bahan-bahan segar pilihan.',
@@ -139,7 +116,6 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $imageIndex = 0;
         foreach ($products as $prod) {
             $subcategory = Subcategory::where('name', $prod['subcategory'])->first();
             if (!$subcategory) continue;
@@ -152,14 +128,12 @@ class DatabaseSeeder extends Seeder
                 'name' => $prod['name'],
                 'slug' => Str::slug($prod['name']) . '-' . Str::random(5),
                 'description' => $descriptions[$catName][$subName] ?? 'Produk berkualitas dari Ulyabi.',
-                'image' => $images[$imageIndex % count($images)],
+                'image' => '',
                 'price' => $prod['price'],
                 'stock' => rand(10, 80),
                 'is_best_seller' => $prod['best'],
                 'is_new_arrival' => $prod['new'],
             ]);
-
-            $imageIndex++;
         }
     }
 }

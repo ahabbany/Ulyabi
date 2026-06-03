@@ -18,7 +18,7 @@
             <div class="bg-white rounded-2xl shadow-md overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10">
                     <div class="relative">
-                        <img src="{{ $product->image }}" alt="{{ $product->name }}" 
+                        <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" 
                              class="w-full h-64 md:h-96 object-cover rounded-xl"
                              loading="lazy">
                         @if($product->is_best_seller)
@@ -84,9 +84,10 @@
                     @foreach($relatedProducts as $related)
                     <div class="card-product group">
                         <div class="relative overflow-hidden">
-                            <img src="{{ $related->image }}" alt="{{ $related->name }}" 
-                                 class="w-full h-40 md:h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                                 loading="lazy">
+                            <img src="{{ asset($related->image) }}" alt="{{ $related->name }}" 
+
+                             class="w-full h-40 md:h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                             loading="lazy">
                             <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $related->id }}">

@@ -7,7 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -51,7 +51,10 @@ class ProductController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        $imagePath = $request->file('image')->store('products', 'public');
+        $file = $request->file('image');
+        $filename = time() . '-' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('images/products'), $filename);
+        $imagePath = 'images/products/' . $filename;
 
         Product::create([
             'subcategory_id' => $validated['subcategory_id'],
@@ -106,10 +109,13 @@ class ProductController extends Controller
         ];
 
         if ($request->hasFile('image')) {
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
+            if ($product->image && File::exists(public_path($product->image))) {
+                File::delete(public_path($product->image));
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $file = $request->file('image');
+            $filename = time() . '-' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/products'), $filename);
+            $data['image'] = 'images/products/' . $filename;
         }
 
         $product->update($data);
@@ -120,8 +126,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->image && Storage::disk('public')->exists($product->image)) {
-            Storage::disk('public')->delete($product->image);
+        if ($product->image && File::exists(public_path($product->image))) {
+            File::delete(public_path($product->image));
         }
 
         $product->delete();

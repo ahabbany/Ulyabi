@@ -73,7 +73,7 @@
                 @foreach($products as $product)
                 <div class="card-product group">
                     <div class="relative overflow-hidden">
-                        <img src="{{ $product->image }}" alt="{{ $product->name }}" 
+                        <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" 
                              class="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
                              loading="lazy">
                         @if($product->is_best_seller)

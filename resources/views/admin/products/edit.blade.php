@@ -60,20 +60,14 @@
             </div>
 
             <div id="image-preview" class="hidden">
-                <label class="form-label">Preview</label>
+                <label class="form-label">Preview Baru</label>
                 <img id="preview" class="w-48 h-48 object-cover rounded-xl border border-gray-200">
             </div>
 
             @if($product->image)
             <div id="current-image">
                 <label class="form-label">Foto Saat Ini</label>
-                @php
-                    $imageUrl = $product->image;
-                    if (!\Illuminate\Support\Str::startsWith($imageUrl, 'http')) {
-                        $imageUrl = \Illuminate\Support\Facades\Storage::url($imageUrl);
-                    }
-                @endphp
-                <img src="{{ $imageUrl }}" class="w-48 h-48 object-cover rounded-xl border border-gray-200">
+                <img src="{{ asset($product->image) }}" class="w-48 h-48 object-cover rounded-xl border border-gray-200">
             </div>
             @endif
 
