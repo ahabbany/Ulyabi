@@ -46,12 +46,6 @@
                 </div>
 
                 <div>
-                    <label class="form-label">Stok</label>
-                    <input type="number" name="stock" class="form-input @error('stock') border-red-400 @enderror" value="{{ old('stock', $product->stock) }}" min="0" required>
-                    @error('stock')<p class="form-error">{{ $message }}</p>@enderror
-                </div>
-
-                <div>
                     <label class="form-label">Foto Produk</label>
                     <input type="file" name="image" id="image" class="form-input @error('image') border-red-400 @enderror" accept="image/*" onchange="previewImage(event)">
                     <p class="text-xs text-gray-400 mt-1">Kosongkan jika tidak ingin mengubah foto.</p>

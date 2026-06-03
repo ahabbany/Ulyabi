@@ -32,10 +32,6 @@
                         <p class="text-2xl font-bold text-[#A376A2]">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-400">Stok</p>
-                        <p class="font-medium {{ $product->stock > 0 ? 'text-green-600' : 'text-red-500' }}">{{ $product->stock }} unit</p>
-                    </div>
-                    <div>
                         <p class="text-sm text-gray-400">Deskripsi</p>
                         <p class="text-gray-600 leading-relaxed">{{ $product->description }}</p>
                     </div>

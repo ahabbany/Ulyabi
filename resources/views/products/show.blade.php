@@ -43,7 +43,6 @@
                             Rp{{ number_format($product->price, 0, ',', '.') }}
                         </div>
 
-                        @if($product->stock > 0)
                         <form action="{{ route('cart.add') }}" method="POST" class="space-y-4">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -52,12 +51,11 @@
                                 <div class="flex items-center border border-gray-200 rounded-xl">
                                     <button type="button" onclick="decrementQty()" 
                                             class="px-4 py-2 text-gray-600 hover:text-[#A376A2] transition font-bold">−</button>
-                                    <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ $product->stock }}"
+                                    <input type="number" name="quantity" id="quantity" value="1" min="1"
                                            class="w-16 text-center border-x border-gray-200 py-2 text-sm focus:outline-none" readonly>
                                     <button type="button" onclick="incrementQty()" 
                                             class="px-4 py-2 text-gray-600 hover:text-[#A376A2] transition font-bold">+</button>
                                 </div>
-                                <span class="text-xs text-gray-400">Stok: {{ $product->stock }}</span>
                             </div>
                             <button type="submit" class="btn-primary w-full justify-center text-base py-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -68,11 +66,6 @@
                                 Tambah ke Keranjang
                             </button>
                         </form>
-                        @else
-                        <div class="bg-red-50 text-red-500 px-6 py-3 rounded-xl text-sm font-medium">
-                            Maaf, produk ini sedang habis.
-                        </div>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -123,8 +116,7 @@
         function incrementQty() {
             const input = document.getElementById('quantity');
             const val = parseInt(input.value);
-            const max = parseInt(input.max);
-            if (val < max) input.value = val + 1;
+            input.value = val + 1;
         }
     </script>
 @endsection

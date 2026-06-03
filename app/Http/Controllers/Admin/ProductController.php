@@ -45,7 +45,6 @@ class ProductController extends Controller
             'description' => 'required',
             'price' => 'required|numeric|min:0',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'stock' => 'required|integer|min:0',
             'is_best_seller' => 'boolean',
             'is_new_arrival' => 'boolean',
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -63,7 +62,6 @@ class ProductController extends Controller
             'description' => $validated['description'],
             'image' => $imagePath,
             'price' => $validated['price'],
-            'stock' => $validated['stock'],
             'is_best_seller' => $request->boolean('is_best_seller'),
             'is_new_arrival' => $request->boolean('is_new_arrival'),
         ]);
@@ -91,7 +89,6 @@ class ProductController extends Controller
             'description' => 'required',
             'price' => 'required|numeric|min:0',
             'subcategory_id' => 'required|exists:subcategories,id',
-            'stock' => 'required|integer|min:0',
             'is_best_seller' => 'boolean',
             'is_new_arrival' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -103,7 +100,6 @@ class ProductController extends Controller
             'slug' => Str::slug($validated['name']) . '-' . Str::random(6),
             'description' => $validated['description'],
             'price' => $validated['price'],
-            'stock' => $validated['stock'],
             'is_best_seller' => $request->boolean('is_best_seller'),
             'is_new_arrival' => $request->boolean('is_new_arrival'),
         ];

@@ -8,7 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'subcategory_id', 'name', 'slug', 'description',
-        'image', 'price', 'stock', 'is_best_seller', 'is_new_arrival',
+        'image', 'price', 'is_best_seller', 'is_new_arrival',
     ];
 
     protected function casts(): array

@@ -8,6 +8,7 @@ use App\Models\Subcategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -108,8 +109,7 @@ class DatabaseSeeder extends Seeder
         }
 
         foreach ($subcategories as $sub) {
-            $category = Category::where('slug', $sub['category'])->first();
-            Subcategory::create([
+            $category = Category::where('name', $sub['category'])->first();            Subcategory::create([
                 'category_id' => $category->id,
                 'name' => $sub['name'],
                 'slug' => $sub['slug'],
