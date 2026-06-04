@@ -43,7 +43,7 @@
                             <span id="display-price">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
                         </div>
 
-                        <form action="{{ route('cart.add') }}" method="POST" class="space-y-4">
+                        <form action="{{ route('cart.add') }}" method="POST" class="ajax-cart space-y-4">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             <input type="hidden" name="variant_id" id="variant_id" value="0">
@@ -105,7 +105,7 @@
 
                              class="w-full h-40 md:h-48 object-cover transition-transform duration-500 group-hover:scale-110"
                              loading="lazy">
-                            <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
+                            <form action="{{ route('cart.add') }}" method="POST" class="ajax-cart absolute bottom-3 right-3">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $related->id }}">
                                 <input type="hidden" name="variant_id" value="0">

@@ -83,7 +83,16 @@ class CartController extends Controller
 
         session()->put('cart', $cart);
 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json(['success' => true, 'count' => count($cart)]);
+        }
+
         return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
+    }
+
+    public function count()
+    {
+        return response()->json(['count' => count(session('cart', []))]);
     }
 
     public function update()

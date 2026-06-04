@@ -88,7 +88,7 @@
                              class="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
                              loading="lazy">
                         <span class="badge-best absolute top-3 left-3">Best Seller</span>
-                        <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
+                        <form action="{{ route('cart.add') }}" method="POST" class="ajax-cart absolute bottom-3 right-3">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             <input type="hidden" name="variant_id" value="0">
@@ -133,7 +133,7 @@
                              class="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
                              loading="lazy">
                         <span class="badge-new absolute top-3 left-3">New</span>
-                        <form action="{{ route('cart.add') }}" method="POST" class="absolute bottom-3 right-3">
+                        <form action="{{ route('cart.add') }}" method="POST" class="ajax-cart absolute bottom-3 right-3">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             <input type="hidden" name="variant_id" value="0">

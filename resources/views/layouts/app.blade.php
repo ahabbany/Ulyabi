@@ -151,7 +151,7 @@
                     <a href="{{ route('home') }}" class="nav-link text-sm font-medium" style="color: #F7EFE5;">Beranda</a>
                     <a href="{{ route('products.index') }}" class="nav-link text-sm font-medium" style="color: #F7EFE5;">Produk</a>
                     <a href="{{ route('admin.login') }}" class="nav-link text-sm font-medium" style="color: #F7EFE5;">Admin Login</a>
-                    <a href="{{ route('cart.index') }}" class="relative nav-link text-sm font-medium" style="color: #F7EFE5;">
+                    <a href="{{ route('cart.index') }}" class="relative nav-link text-sm font-medium cart-target" style="color: #F7EFE5;">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -159,13 +159,15 @@
                         </svg>
                         @php $cartCount = count(session('cart', [])); @endphp
                         @if($cartCount > 0)
-                            <span class="absolute -top-2 -right-3 bg-[#DDC3C3] text-[#674188] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{{ $cartCount }}</span>
+                            <span class="cart-badge-desktop absolute -top-2 -right-3 bg-[#DDC3C3] text-[#674188] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{{ $cartCount }}</span>
+                        @else
+                            <span class="cart-badge-desktop absolute -top-2 -right-3 bg-[#DDC3C3] text-[#674188] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
                         @endif
                     </a>
                 </div>
 
                 <div class="md:hidden flex items-center gap-3">
-                    <a href="{{ route('cart.index') }}" class="relative">
+                    <a href="{{ route('cart.index') }}" class="relative cart-target-mobile">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color: #F7EFE5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -173,7 +175,9 @@
                         </svg>
                         @php $cartCount = count(session('cart', [])); @endphp
                         @if($cartCount > 0)
-                            <span class="absolute -top-2 -right-3 bg-[#DDC3C3] text-[#674188] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{{ $cartCount }}</span>
+                            <span class="cart-badge-mobile absolute -top-2 -right-3 bg-[#DDC3C3] text-[#674188] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{{ $cartCount }}</span>
+                        @else
+                            <span class="cart-badge-mobile absolute -top-2 -right-3 bg-[#DDC3C3] text-[#674188] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
                         @endif
                     </a>
                     <button id="menu-toggle" class="focus:outline-none">
@@ -247,6 +251,41 @@
         </svg>
     </a>
 
+    {{-- Tombol Tutorial --}}
+    <button id="tutorialBtn" class="tutorial-float" aria-label="Tutorial" title="Cara Belanja">
+        ?
+    </button>
+
+    {{-- Modal Tutorial --}}
+    <div id="tutorialOverlay" class="tutorial-overlay">
+        <div class="tutorial-modal">
+            <button onclick="tutupTutorial()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <div class="tutorial-dots" id="tutorialDots"></div>
+
+            <div id="tutorialContent" class="text-center">
+                {{-- diisi JS --}}
+            </div>
+
+            <div class="flex items-center justify-between mt-6">
+                <button id="tutorialPrev" onclick="gantiLangkah(-1)" class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-[#A376A2] hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Sebelumnya
+                </button>
+                <span id="tutorialCounter" class="text-sm text-gray-400 font-medium"></span>
+                <button id="tutorialNext" onclick="gantiLangkah(1)" class="px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-[#A376A2] hover:bg-[#8D5F8C] transition">
+                    Selanjutnya
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
     @if(session('success'))
     <div id="flash-message" class="fixed top-20 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg text-sm font-medium animate-pulse">
         {{ session('success') }}
@@ -275,6 +314,194 @@
         document.getElementById('menu-toggle')?.addEventListener('click', function() {
             const menu = document.getElementById('mobile-menu');
             menu.classList.toggle('hidden');
+        });
+    </script>
+
+    <script>
+        // ===== TUTORIAL =====
+        const langkahTutorial = [
+            {
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+                judul: 'Jelajahi Produk',
+                desc: 'Lihat-lihat dulu semua produk Ulyabi. Bisa dicari pakai kolom pencarian, atau pilih kategori yang kamu suka!'
+            },
+            {
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
+                judul: 'Klik + atau Tambah ke Keranjang',
+                desc: 'Suka sama produknya? Tinggal klik tombol <b>+</b> atau <b>Tambah ke Keranjang</b>. Nanti ada animasi terbang ke ikon keranjang, tandanya produk berhasil masuk!'
+            },
+            {
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>`,
+                judul: 'Cek Keranjang',
+                desc: 'Klik ikon <b>keranjang</b> di pojok kanan atas. Di sini kamu bisa lihat semua produk yang sudah dipilih.'
+            },
+            {
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>`,
+                judul: 'Atur Pesanan',
+                desc: 'Bisa tambah atau kurangi jumlah barang. Kalau mau hapus, tinggal klik ikon <b>tempat sampah</b>. Total belanja otomatis terhitung!'
+            },
+            {
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>`,
+                judul: 'Checkout via WhatsApp',
+                desc: 'Udah puas? Klik <b>Checkout via WhatsApp</b>. Nanti otomatis terbuka WhatsApp dengan daftar pesanan kamu. Tinggal kirim!'
+            }
+        ];
+
+        let langkahSekarang = 0;
+
+        function renderLangkah(index) {
+            const l = langkahTutorial[index];
+            const total = langkahTutorial.length;
+            document.getElementById('tutorialContent').innerHTML = `
+                <div class="tutorial-icon-box">${l.icon}</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">${l.judul}</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">${l.desc}</p>
+            `;
+            const dots = document.getElementById('tutorialDots');
+            dots.innerHTML = langkahTutorial.map((_, i) =>
+                `<span class="tutorial-dot ${i === index ? 'active' : ''}" onclick="lompatLangkah(${i})"></span>`
+            ).join('');
+            document.getElementById('tutorialCounter').textContent = `${index + 1} / ${total}`;
+            document.getElementById('tutorialPrev').disabled = index === 0;
+            document.getElementById('tutorialNext').innerHTML = index === total - 1
+                ? 'Selesai <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>'
+                : 'Selanjutnya <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+        }
+
+        function gantiLangkah(arah) {
+            const baru = langkahSekarang + arah;
+            if (baru < 0 || baru >= langkahTutorial.length) return;
+            langkahSekarang = baru;
+            renderLangkah(langkahSekarang);
+        }
+
+        function lompatLangkah(index) {
+            langkahSekarang = index;
+            renderLangkah(langkahSekarang);
+        }
+
+        function bukaTutorial() {
+            document.getElementById('tutorialOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            langkahSekarang = 0;
+            renderLangkah(0);
+        }
+
+        function tutupTutorial() {
+            document.getElementById('tutorialOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('tutorialBtn')?.addEventListener('click', bukaTutorial);
+        document.getElementById('tutorialOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) tutupTutorial();
+        });
+    </script>
+
+    <script>
+        // ===== ANIMASI TAMBAH KE KERANJANG =====
+        function animasiTerbangKeKeranjang(buttonEl) {
+            const cartIcon = document.querySelector('.cart-target');
+            if (!cartIcon) return;
+
+            const btnRect = buttonEl.getBoundingClientRect();
+            const cartRect = cartIcon.getBoundingClientRect();
+
+            const flyEl = document.createElement('div');
+            flyEl.className = 'cart-fly-el';
+            flyEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>';
+            flyEl.style.left = (btnRect.left + btnRect.width / 2 - 24) + 'px';
+            flyEl.style.top = (btnRect.top + btnRect.height / 2 - 24) + 'px';
+            document.body.appendChild(flyEl);
+
+            const startX = btnRect.left + btnRect.width / 2 - 24;
+            const startY = btnRect.top + btnRect.height / 2 - 24;
+            const endX = cartRect.left + cartRect.width / 2 - 24;
+            const endY = cartRect.top + cartRect.height / 2 - 24;
+            const midX = (startX + endX) / 2;
+            const midY = startY - 120;
+
+            let progress = 0;
+            const durasi = 500;
+            const startTime = performance.now();
+
+            function frame(now) {
+                const elapsed = now - startTime;
+                progress = Math.min(elapsed / durasi, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                const x = (1 - ease) * (1 - ease) * startX + 2 * (1 - ease) * ease * midX + ease * ease * endX;
+                const y = (1 - ease) * (1 - ease) * startY + 2 * (1 - ease) * ease * midY + ease * ease * endY;
+                flyEl.style.left = x + 'px';
+                flyEl.style.top = y + 'px';
+                flyEl.style.transform = `scale(${1 - progress * 0.3})`;
+                flyEl.style.opacity = 1 - progress * 0.5;
+                if (progress < 1) {
+                    requestAnimationFrame(frame);
+                } else {
+                    flyEl.remove();
+                    updateBadgeKeranjang();
+                    tampilkanNotifikasi();
+                }
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function updateBadgeKeranjang() {
+            const desktopBadge = document.querySelector('.cart-badge-desktop');
+            const mobileBadge = document.querySelector('.cart-badge-mobile');
+            fetch('{{ route('cart.count') }}')
+                .then(r => r.json())
+                .then(data => {
+                    const count = data.count || 0;
+                    [desktopBadge, mobileBadge].forEach(el => {
+                        if (el) {
+                            if (count > 0) {
+                                el.textContent = count;
+                                el.classList.remove('hidden');
+                                el.classList.remove('badge-bounce');
+                                void el.offsetWidth;
+                                el.classList.add('badge-bounce');
+                            } else {
+                                el.classList.add('hidden');
+                            }
+                        }
+                    });
+                });
+        }
+
+        function tampilkanNotifikasi() {
+            let toast = document.getElementById('cartToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'cartToast';
+                toast.className = 'cart-toast';
+                toast.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Berhasil ditambahkan ke keranjang!';
+                document.body.appendChild(toast);
+            }
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form.matches('form.ajax-cart')) {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (btn) animasiTerbangKeKeranjang(btn);
+                        else updateBadgeKeranjang();
+                    }
+                });
+            }
         });
     </script>
 </body>
