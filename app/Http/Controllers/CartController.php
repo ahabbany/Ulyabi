@@ -59,7 +59,7 @@ class CartController extends Controller
     {
         $data = request()->validate([
             'product_id' => 'required|exists:products,id',
-            'variant_id' => 'nullable|integer|exists:product_variants,id',
+            'variant_id' => 'nullable|integer',
             'quantity' => 'required|integer|min:1',
         ]);
 
