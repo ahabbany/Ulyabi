@@ -401,11 +401,14 @@
     <script>
         // ===== ANIMASI TAMBAH KE KERANJANG =====
         function animasiTerbangKeKeranjang(buttonEl) {
-            const cartIcon = document.querySelector('.cart-target');
-            if (!cartIcon) return;
+            let cartEl = document.querySelector('.cart-target');
+            if (!cartEl || cartEl.offsetParent === null) {
+                cartEl = document.querySelector('.cart-target-mobile');
+            }
+            if (!cartEl) return;
 
             const btnRect = buttonEl.getBoundingClientRect();
-            const cartRect = cartIcon.getBoundingClientRect();
+            const cartRect = cartEl.getBoundingClientRect();
 
             const flyEl = document.createElement('div');
             flyEl.className = 'cart-fly-el';
@@ -419,7 +422,7 @@
             const endX = cartRect.left + cartRect.width / 2 - 24;
             const endY = cartRect.top + cartRect.height / 2 - 24;
             const midX = (startX + endX) / 2;
-            const midY = startY - 120;
+            const midY = Math.min(startY, endY) - 100;
 
             let progress = 0;
             const durasi = 500;
