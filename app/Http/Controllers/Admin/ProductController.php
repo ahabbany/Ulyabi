@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -53,37 +52,12 @@ class ProductController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        // =========================
-        // UPLOAD CLOUDINARY
-        // =========================
-        $file = $request->file('image');
+        $imageUrl = $this->uploadToCloudinary($request->file('image'));
 
-        $uploadPath = $file->getRealPath();
+        if (!$imageUrl) {
+            return back()->withInput()->with('error', 'Upload gambar ke Cloudinary gagal. Periksa preset dan koneksi.');
+        }
 
-        $cloudName = env('CLOUDINARY_CLOUD_NAME');
-
-        $upload = curl_init();
-
-        curl_setopt_array($upload, [
-            CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => [
-                'file' => new \CURLFile($uploadPath),
-                'upload_preset' => 'unsigned_upload',
-            ],
-        ]);
-
-        $response = curl_exec($upload);
-        curl_close($upload);
-
-        $result = json_decode($response, true);
-
-        $imageUrl = $result['secure_url'];
-
-        // =========================
-        // CREATE PRODUCT
-        // =========================
         $product = Product::create([
             'subcategory_id' => $validated['subcategory_id'],
             'name' => $validated['name'],
@@ -95,9 +69,6 @@ class ProductController extends Controller
             'is_new_arrival' => $request->boolean('is_new_arrival'),
         ]);
 
-        // =========================
-        // VARIANTS (TIDAK DIUBAH)
-        // =========================
         if ($request->filled('variants')) {
             foreach ($request->variants as $variantData) {
                 $product->variants()->create([
@@ -149,41 +120,18 @@ class ProductController extends Controller
             'is_new_arrival' => $request->boolean('is_new_arrival'),
         ];
 
-        // =========================
-        // UPDATE CLOUDINARY IMAGE
-        // =========================
         if ($request->file('image')) {
-            $file = $request->file('image');
-            $uploadPath = $file->getRealPath();
-            $cloudName = env('CLOUDINARY_CLOUD_NAME');
-            $upload = curl_init();
-            curl_setopt_array($upload, [
-                CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => [
-                    'file' => new \CURLFile($uploadPath),
-                    'upload_preset' => 'unsigned_upload',
-                ],
-            ]);
+            $imageUrl = $this->uploadToCloudinary($request->file('image'));
 
-            $response = curl_exec($upload);
-            curl_close($upload);
-
-            $result = json_decode($response, true);
-
-            if (!isset($result['secure_url'])) {
-                return back()->with('error', 'Upload gambar gagal. Coba cek preset Cloudinary.');
+            if (!$imageUrl) {
+                return back()->withInput()->with('error', 'Upload gambar ke Cloudinary gagal. Periksa preset dan koneksi.');
             }
 
-            $data['image'] = $result['secure_url'];
+            $data['image'] = $imageUrl;
         }
 
         $product->update($data);
 
-        // =========================
-        // VARIANTS (RESET)
-        // =========================
         $product->variants()->delete();
 
         if ($request->filled('variants')) {
@@ -201,7 +149,6 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        // Cloudinary image tidak perlu dihapus manual (opsional)
         $product->delete();
 
         return redirect()->route('admin.products.index')
@@ -212,5 +159,40 @@ class ProductController extends Controller
     {
         $subcategories = Subcategory::where('category_id', $categoryId)->get();
         return response()->json($subcategories);
+    }
+
+    private function uploadToCloudinary($file)
+    {
+        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+
+        if (!$cloudName) {
+            return null;
+        }
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => [
+                'file' => curl_file_create($file->getRealPath(), $file->getMimeType(), $file->getClientOriginalName()),
+                'upload_preset' => 'unsigned_upload',
+            ],
+            CURLOPT_TIMEOUT => 30,
+        ]);
+
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($error || $httpCode !== 200) {
+            return null;
+        }
+
+        $result = json_decode($response, true);
+
+        return $result['secure_url'] ?? null;
     }
 }
