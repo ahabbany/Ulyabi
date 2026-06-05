@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -52,18 +54,14 @@ class ProductController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        $imageUrl = $this->uploadToCloudinary($request->file('image'));
-
-        if (!$imageUrl) {
-            return back()->withInput()->with('error', 'Upload gambar ke Cloudinary gagal. Periksa preset dan koneksi.');
-        }
+        $imagePath = $request->file('image')->store('images/products', 'public');
 
         $product = Product::create([
             'subcategory_id' => $validated['subcategory_id'],
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']) . '-' . Str::random(6),
             'description' => $validated['description'],
-            'image' => $imageUrl,
+            'image' => 'storage/' . $imagePath,
             'price' => $validated['price'],
             'is_best_seller' => $request->boolean('is_best_seller'),
             'is_new_arrival' => $request->boolean('is_new_arrival'),
@@ -121,13 +119,15 @@ class ProductController extends Controller
         ];
 
         if ($request->file('image')) {
-            $imageUrl = $this->uploadToCloudinary($request->file('image'));
-
-            if (!$imageUrl) {
-                return back()->withInput()->with('error', 'Upload gambar ke Cloudinary gagal. Periksa preset dan koneksi.');
+            if ($product->image) {
+                $oldPath = str_replace('storage/', '', $product->image);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
 
-            $data['image'] = $imageUrl;
+            $imagePath = $request->file('image')->store('images/products', 'public');
+            $data['image'] = 'storage/' . $imagePath;
         }
 
         $product->update($data);
@@ -149,6 +149,13 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->image) {
+            $oldPath = str_replace('storage/', '', $product->image);
+            if (Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
+
         $product->delete();
 
         return redirect()->route('admin.products.index')
@@ -159,40 +166,5 @@ class ProductController extends Controller
     {
         $subcategories = Subcategory::where('category_id', $categoryId)->get();
         return response()->json($subcategories);
-    }
-
-    private function uploadToCloudinary($file)
-    {
-        $cloudName = env('CLOUDINARY_CLOUD_NAME');
-
-        if (!$cloudName) {
-            return null;
-        }
-
-        $ch = curl_init();
-
-        curl_setopt_array($ch, [
-            CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => [
-                'file' => curl_file_create($file->getRealPath(), $file->getMimeType(), $file->getClientOriginalName()),
-                'upload_preset' => 'unsigned_upload',
-            ],
-            CURLOPT_TIMEOUT => 30,
-        ]);
-
-        $response = curl_exec($ch);
-        $error = curl_error($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($error || $httpCode !== 200) {
-            return null;
-        }
-
-        $result = json_decode($response, true);
-
-        return $result['secure_url'] ?? null;
     }
 }
