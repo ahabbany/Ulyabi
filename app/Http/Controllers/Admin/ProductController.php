@@ -152,16 +152,11 @@ class ProductController extends Controller
         // =========================
         // UPDATE CLOUDINARY IMAGE
         // =========================
-        if ($request->hasFile('image')) {
-
+        if ($request->file('image')) {
             $file = $request->file('image');
-
             $uploadPath = $file->getRealPath();
-
             $cloudName = env('CLOUDINARY_CLOUD_NAME');
-
             $upload = curl_init();
-
             curl_setopt_array($upload, [
                 CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
                 CURLOPT_RETURNTRANSFER => true,
@@ -176,6 +171,10 @@ class ProductController extends Controller
             curl_close($upload);
 
             $result = json_decode($response, true);
+
+            if (!isset($result['secure_url'])) {
+                return back()->with('error', 'Upload gambar gagal. Coba cek preset Cloudinary.');
+            }
 
             $data['image'] = $result['secure_url'];
         }
