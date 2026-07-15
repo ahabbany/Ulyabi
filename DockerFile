@@ -1,0 +1,51 @@
+FROM php:8.2-fpm-alpine
+
+# Instal dependensi sistem dan ekstensi PHP yang dibutuhkan Laravel
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    curl \
+    libpng-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git
+
+RUN docker-php-ext-install pdo_mysql bcmath gd
+
+# Instal Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Atur direktori kerja
+WORKDIR /var/www/html
+
+# Salin seluruh kode proyek
+COPY . .
+
+# Instal dependensi Laravel
+RUN composer install --no-dev --optimize-autoloader
+
+# Sesuaikan hak akses folder storage dan cache
+RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache
+
+# Salin konfigurasi Nginx bawaan untuk Laravel
+RUN printf '%s\n' \
+    'server {' \
+    '    listen 8080;' \
+    '    listen [::]:8080;' \
+    '    root /var/www/html/public;' \
+    '    index index.php index.html;' \
+    '    server_name _;' \
+    '    location / {' \
+    '        try_files $uri $uri/ /index.php?$query_string;' \
+    '    }' \
+    '    location ~ \.php$ {' \
+    '        include fastcgi_params;' \
+    '        fastcgi_pass 127.0.0.1:9000;' \
+    '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' \
+    '    }' \
+    '}' > /etc/nginx/http.d/default.conf
+
+# Jalankan PHP-FPM dan Nginx secara bersamaan saat container aktif
+EXPOSE 8080
+CMD php-fpm -D && nginx -g "daemon off;"
